@@ -55,7 +55,19 @@ bodyData={
   ]
 }
 
+self.mutex = threading.Lock()
 
+def add_mutex(func):
+    def decor(*args, **kwargs):
+        time.sleep(1)
+        self.mutex.acquire()
+        func(*args, **kwargs)
+        self.mutex.release()
+    return decor
+
+@add_mutex
+def safe_print(content):
+    print content
 
 def post(url,postData):
     request = urllib2.Request(url,postData)
@@ -79,7 +91,7 @@ def worker(n):
     compressedstream = gzip_compress("sendInfos="+jsonData)
     for i in xrange(n):
         post(url,compressedstream)
-        print i,'Worker has done!'
+        safe_print(str(i)+'Worker has done!')
 
 
 if __name__ == '__main__':
